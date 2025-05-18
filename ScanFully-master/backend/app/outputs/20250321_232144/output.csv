@@ -1,0 +1,9 @@
+# Nmap Scan Results
+# Scanner: Nmap Bilinmiyor
+# Command: Bilinmiyor
+# Start Time: 2025-03-21 23:21:44
+# Exported: 2025-03-21 23:21:44
+#
+ip,hostname,mac,vendor,status,reason,os_name,os_accuracy,protocol,port,state,reason,service,product,version,extrainfo,cpe,scripts
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,631,open,syn-ack,ipp,,,,,
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,8000,open,syn-ack,http-alt,,,,,

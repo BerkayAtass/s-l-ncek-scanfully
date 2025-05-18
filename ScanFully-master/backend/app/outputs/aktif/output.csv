@@ -1,0 +1,9 @@
+# Nmap Scan Results
+# Scanner: Nmap Bilinmiyor
+# Command: Bilinmiyor
+# Start Time: 2025-05-13 21:08:55
+# Exported: 2025-05-13 21:12:01
+#
+ip,hostname,mac,vendor,status,reason,os_name,os_accuracy,protocol,port,state,reason,service,product,version,extrainfo,cpe,scripts
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,8000,open,syn-ack,http-alt,uvicorn,,,,
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,8501,open,syn-ack,http,Tornado httpd,6.4.2,,cpe:/a:tornadoweb:tornado:6.4.2,

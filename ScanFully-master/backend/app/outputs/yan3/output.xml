@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Tue May 13 19:30:26 2025 as: nmap -p- -sU -T3 -oX outputs/yan3/output.xml -oJ 127.0.0.1 outputs/yan3/output.json -->
+<nmaprun scanner="nmap" args="nmap -p- -sU -T3 -oX outputs/yan3/output.xml -oJ 127.0.0.1 outputs/yan3/output.json" start="1747164626" startstr="Tue May 13 19:30:26 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="udp" protocol="udp" numservices="65535" services="1-65535"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<target specification="outputs/yan3/output.json" status="skipped" reason="invalid"/>
+<host starttime="1747164626" endtime="1747164627"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="65535">
+<extrareasons reason="port-unreaches" count="65535"/>
+</extraports>
+</ports>
+<times srtt="5" rttvar="1" to="100000"/>
+</host>
+<runstats><finished time="1747164627" timestr="Tue May 13 19:30:27 2025" elapsed="0.98" summary="Nmap done at Tue May 13 19:30:27 2025; 1 IP address (1 host up) scanned in 0.98 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

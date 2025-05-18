@@ -1,0 +1,20 @@
+{
+    "date": "2025-04-01",
+    "time": "13:05:19",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "top1000",
+    "port_value": null,
+    "scan_type": "sT",
+    "service_detection": "standard",
+    "version_intensity": 5,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "normal",
+    "estimated_duration": {
+        "duration": 60,
+        "unit": "dakika"
+    },
+    "command": "nmap 127.0.0.1 -p 1-1000 -sT -sV --version-intensity 5 -T3 -oX outputs/20250401_130513/output.xml -oN outputs/20250401_130513/output.txt"
+}

@@ -1,0 +1,22 @@
+{
+    "scan_name": "local",
+    "date": "2025-05-13",
+    "time": "20:52:41",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "all",
+    "port_value": null,
+    "scan_type": "sT",
+    "service_detection": "standard",
+    "version_intensity": 7,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "xml",
+    "estimated_duration": {
+        "duration": 3.3,
+        "unit": "saat"
+    },
+    "command": "nmap 127.0.0.1 -p- -sT -sV --version-intensity 7 -T3 -oX outputs/local/output.xml",
+    "scan_id": "f4ea11fe-549a-4dbf-aa58-6ec9782f2d52"
+}

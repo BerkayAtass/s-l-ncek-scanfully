@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Wed May  7 20:45:14 2025 as: nmap -p 1-1000 -sT -T0 -oX outputs/scan_2025-05-07T20_45_14_528Z/output.xml 192.168.1.1 -->
+<nmaprun scanner="nmap" args="nmap -p 1-1000 -sT -T0 -oX outputs/scan_2025-05-07T20_45_14_528Z/output.xml 192.168.1.1" start="1746650714" startstr="Wed May  7 20:45:14 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="connect" protocol="tcp" numservices="1000" services="1-1000"/>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Tue May 13 19:32:55 2025 as: nmap -p- -sU -T0 -oX &quot;outputs/tarama 5/output.xml&quot; -oJ 192.168.1.0/24 &quot;outputs/tarama 5/output.json&quot; -->
+<nmaprun scanner="nmap" args="nmap -p- -sU -T0 -oX &quot;outputs/tarama 5/output.xml&quot; -oJ 192.168.1.0/24 &quot;outputs/tarama 5/output.json&quot;" start="1747164775" startstr="Tue May 13 19:32:55 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="udp" protocol="udp" numservices="65535" services="1-65535"/>

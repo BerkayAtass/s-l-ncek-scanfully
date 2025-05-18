@@ -1,0 +1,13 @@
+# Nmap 7.80 scan initiated Sat Mar 22 00:01:24 2025 as: nmap -F -sT -sV --version-intensity 4 --script default -T3 -oX outputs/20250322_000124/output.xml -oN outputs/20250322_000124/output.txt 127.0.0.1
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.000043s latency).
+Not shown: 98 closed ports
+PORT     STATE SERVICE   VERSION
+631/tcp  open  ipp       CUPS 2.4
+| http-robots.txt: 1 disallowed entry 
+|_/
+|_http-title: Home - CUPS 2.4.7
+8000/tcp open  http-alt?
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Sat Mar 22 00:03:50 2025 -- 1 IP address (1 host up) scanned in 146.84 seconds

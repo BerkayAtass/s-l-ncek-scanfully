@@ -1,0 +1,22 @@
+{
+    "scan_name": "denemeler",
+    "date": "2025-05-13",
+    "time": "19:12:19",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "top1000",
+    "port_value": null,
+    "scan_type": "sT",
+    "service_detection": "none",
+    "version_intensity": null,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "xml",
+    "estimated_duration": {
+        "duration": 30,
+        "unit": "dakika"
+    },
+    "command": "nmap 127.0.0.1 -p 1-1000 -sT -T3 -oX outputs/denemeler/output.xml",
+    "scan_id": "dd658cef-4734-4f41-a2ef-802470e0bfe2"
+}

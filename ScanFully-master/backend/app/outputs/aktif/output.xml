@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Tue May 13 21:08:55 2025 as: nmap -p- -sS -sV -&#45;version-intensity 9 -&#45;version-intensity 8 -T3 -oX outputs/aktif/output.xml 127.0.0.1 -->
+<nmaprun scanner="nmap" args="nmap -p- -sS -sV -&#45;version-intensity 9 -&#45;version-intensity 8 -T3 -oX outputs/aktif/output.xml 127.0.0.1" start="1747170535" startstr="Tue May 13 21:08:55 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="syn" protocol="tcp" numservices="65535" services="1-65535"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1747170535" endtime="1747170719"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="65533">
+<extrareasons reason="resets" count="65533"/>
+</extraports>
+<port protocol="tcp" portid="8000"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="http-alt" product="uvicorn" servicefp="SF-Port8000-TCP:V=7.80%I=8%D=5/13%Time=6823B4EE%P=x86_64-pc-linux-gnu%r(GenericLines,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(GetRequest,AD,&quot;HTTP/1\.1\x20404\x20Not\x20Found\r\ndate:\x20Tue,\x2013\x20May\x202025\x2021:09:02\x20GMT\r\nserver:\x20uvicorn\r\ncontent-length:\x2022\r\ncontent-type:\x20application/json\r\nConnection:\x20close\r\n\r\n{\&quot;detail\&quot;:\&quot;Not\x20Found\&quot;}&quot;)%r(FourOhFourRequest,AD,&quot;HTTP/1\.1\x20404\x20Not\x20Found\r\ndate:\x20Tue,\x2013\x20May\x202025\x2021:09:07\x20GMT\r\nserver:\x20uvicorn\r\ncontent-length:\x2022\r\ncontent-type:\x20application/json\r\nConnection:\x20close\r\n\r\n{\&quot;detail\&quot;:\&quot;Not\x20Found\&quot;}&quot;)%r(Socks5,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(Socks4,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(HTTPOptions,AD,&quot;HTTP/1\.1\x20404\x20Not\x20Found\r\ndate:\x20Tue,\x2013\x20May\x202025\x2021:09:07\x20GMT\r\nserver:\x20uvicorn\r\ncontent-length:\x2022\r\ncontent-type:\x20application/json\r\nConnection:\x20close\r\n\r\n{\&quot;detail\&quot;:\&quot;Not\x20Found\&quot;}&quot;)%r(RTSPRequest,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(DNSVersionBindReqTCP,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(DNSStatusRequestTCP,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(SSLSessionReq,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;)%r(TerminalServerCookie,76,&quot;HTTP/1\.1\x20400\x20Bad\x20Request\r\ncontent-type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\nInvalid\x20HTTP\x20request\x20received\.&quot;);" method="probed" conf="10"/></port>
+<port protocol="tcp" portid="8501"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="http" product="Tornado httpd" version="6.4.2" method="probed" conf="10"><cpe>cpe:/a:tornadoweb:tornado:6.4.2</cpe></service></port>
+</ports>
+<times srtt="4" rttvar="0" to="100000"/>
+</host>
+<runstats><finished time="1747170719" timestr="Tue May 13 21:11:59 2025" elapsed="184.65" summary="Nmap done at Tue May 13 21:11:59 2025; 1 IP address (1 host up) scanned in 184.65 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

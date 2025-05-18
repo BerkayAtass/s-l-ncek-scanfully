@@ -1,0 +1,49 @@
+body{
+    margin: 0;
+    padding: 0;
+}
+
+.inputStyle{
+    width: 60vh;
+    padding: 5px;
+    outline: none;
+    border: none;
+    border-bottom: 1px solid lightgray;
+    border-radius: 5px;
+}
+
+.errorMessage{
+    color: red;
+    font-size: 15px;
+}
+
+.scanFully{
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(137, 185, 244, 0.613);
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+}
+
+.scanFullyText{
+    font-size: x-large;
+    font-weight: 600;
+}
+
+.inputDiv{
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginButton{
+    width: 60vh;
+    background-color: rgba(137, 185, 244, 0.613);
+    border: none;
+    padding: 7px;
+    border-radius: 7px;
+    cursor: pointer;
+}

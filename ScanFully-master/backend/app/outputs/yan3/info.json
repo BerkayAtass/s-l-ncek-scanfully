@@ -1,0 +1,22 @@
+{
+    "scan_name": "yan3",
+    "date": "2025-05-13",
+    "time": "19:30:28",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "all",
+    "port_value": null,
+    "scan_type": "sU",
+    "service_detection": "none",
+    "version_intensity": null,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "json",
+    "estimated_duration": {
+        "duration": 3.3,
+        "unit": "saat"
+    },
+    "command": "nmap 127.0.0.1 -p- -sU -T3 -oX outputs/yan3/output.xml -oJ outputs/yan3/output.json",
+    "scan_id": "8e20af8c-3a20-48e0-a5ad-5bd3c1b7edd0"
+}

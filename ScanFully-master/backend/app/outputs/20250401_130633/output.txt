@@ -1,0 +1,11 @@
+# Nmap 7.80 scan initiated Tue Apr  1 13:06:33 2025 as: nmap -p- -sT -sV --version-intensity 5 -T3 -oX outputs/20250401_130633/output.xml -oN outputs/20250401_130633/output.txt 127.0.0.1
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.000033s latency).
+Not shown: 65532 closed ports
+PORT     STATE SERVICE   VERSION
+631/tcp  open  ipp       CUPS 2.4
+8000/tcp open  http-alt?
+8501/tcp open  http      Tornado httpd 6.4.2
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Tue Apr  1 13:08:05 2025 -- 1 IP address (1 host up) scanned in 91.79 seconds

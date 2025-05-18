@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Tue Apr  1 13:06:33 2025 as: nmap -p- -sT -sV -&#45;version-intensity 5 -T3 -oX outputs/20250401_130633/output.xml -oN outputs/20250401_130633/output.txt 127.0.0.1 -->
+<nmaprun scanner="nmap" args="nmap -p- -sT -sV -&#45;version-intensity 5 -T3 -oX outputs/20250401_130633/output.xml -oN outputs/20250401_130633/output.txt 127.0.0.1" start="1743512793" startstr="Tue Apr  1 13:06:33 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="connect" protocol="tcp" numservices="65535" services="1-65535"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1743512793" endtime="1743512885"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="65532">
+<extrareasons reason="conn-refused" count="65532"/>
+</extraports>
+<port protocol="tcp" portid="631"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="ipp" product="CUPS" version="2.4" method="probed" conf="10"><cpe>cpe:/a:apple:cups:2.4</cpe></service></port>
+<port protocol="tcp" portid="8000"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http-alt" method="table" conf="3"/></port>
+<port protocol="tcp" portid="8501"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="http" product="Tornado httpd" version="6.4.2" method="probed" conf="10"><cpe>cpe:/a:tornadoweb:tornado:6.4.2</cpe></service></port>
+</ports>
+<times srtt="33" rttvar="22" to="100000"/>
+</host>
+<runstats><finished time="1743512885" timestr="Tue Apr  1 13:08:05 2025" elapsed="91.79" summary="Nmap done at Tue Apr  1 13:08:05 2025; 1 IP address (1 host up) scanned in 91.79 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

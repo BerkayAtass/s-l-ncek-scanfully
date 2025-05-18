@@ -1,0 +1,13 @@
+{
+    "date": "2025-03-21",
+    "time": "23:21:44",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "fast",
+    "port_value": null,
+    "scan_type": "sT",
+    "service_detection": "none",
+    "version_intensity": null,
+    "custom_script": "none",
+    "command": "nmap 127.0.0.1 -F -sT -oX outputs/20250321_232144/output.xml"
+}

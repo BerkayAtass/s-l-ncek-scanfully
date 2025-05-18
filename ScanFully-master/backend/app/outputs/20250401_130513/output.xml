@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.80 scan initiated Tue Apr  1 13:05:13 2025 as: nmap -p 1-1000 -sT -sV -&#45;version-intensity 5 -T3 -oX outputs/20250401_130513/output.xml -oN outputs/20250401_130513/output.txt 127.0.0.1 -->
+<nmaprun scanner="nmap" args="nmap -p 1-1000 -sT -sV -&#45;version-intensity 5 -T3 -oX outputs/20250401_130513/output.xml -oN outputs/20250401_130513/output.txt 127.0.0.1" start="1743512713" startstr="Tue Apr  1 13:05:13 2025" version="7.80" xmloutputversion="1.04">
+<scaninfo type="connect" protocol="tcp" numservices="1000" services="1-1000"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1743512713" endtime="1743512719"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="999">
+<extrareasons reason="conn-refused" count="999"/>
+</extraports>
+<port protocol="tcp" portid="631"><state state="open" reason="syn-ack" reason_ttl="0"/><service name="ipp" product="CUPS" version="2.4" method="probed" conf="10"><cpe>cpe:/a:apple:cups:2.4</cpe></service></port>
+</ports>
+<times srtt="43" rttvar="39" to="100000"/>
+</host>
+<runstats><finished time="1743512719" timestr="Tue Apr  1 13:05:19 2025" elapsed="6.21" summary="Nmap done at Tue Apr  1 13:05:19 2025; 1 IP address (1 host up) scanned in 6.21 seconds" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

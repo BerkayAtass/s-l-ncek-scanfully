@@ -1,0 +1,22 @@
+{
+    "scan_name": "aktif",
+    "date": "2025-05-13",
+    "time": "21:12:01",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "all",
+    "port_value": null,
+    "scan_type": "sS",
+    "service_detection": "aggressive",
+    "version_intensity": 8,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "xml",
+    "estimated_duration": {
+        "duration": 5.0,
+        "unit": "saat"
+    },
+    "command": "nmap 127.0.0.1 -p- -sS -sV --version-intensity 9 --version-intensity 8 -T3 -oX outputs/aktif/output.xml",
+    "scan_id": "dc4ee415-460a-456e-b465-825a1b931346"
+}

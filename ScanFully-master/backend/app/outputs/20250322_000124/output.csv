@@ -1,0 +1,9 @@
+# Nmap Scan Results
+# Scanner: Nmap Bilinmiyor
+# Command: Bilinmiyor
+# Start Time: 2025-03-22 00:01:24
+# Exported: 2025-03-22 00:03:50
+#
+ip,hostname,mac,vendor,status,reason,os_name,os_accuracy,protocol,port,state,reason,service,product,version,extrainfo,cpe,scripts
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,631,open,syn-ack,ipp,CUPS,2.4,,cpe:/a:apple:cups:2.4,http-robots.txt: 1 disallowed entry  /; http-title: Home - CUPS 2.4.7
+127.0.0.1,localhost,,,up,syn-ack,,,tcp,8000,open,syn-ack,http-alt,,,,,

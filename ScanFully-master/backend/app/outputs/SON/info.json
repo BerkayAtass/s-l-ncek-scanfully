@@ -1,0 +1,22 @@
+{
+    "scan_name": "SON",
+    "date": "2025-05-13",
+    "time": "19:54:20",
+    "target": "127.0.0.1",
+    "target_type": "ip",
+    "port_option": "all",
+    "port_value": null,
+    "scan_type": "sT",
+    "service_detection": "none",
+    "version_intensity": null,
+    "script_category": "none",
+    "custom_scripts": null,
+    "timing_template": "T3",
+    "output_format": "xml",
+    "estimated_duration": {
+        "duration": 1.7,
+        "unit": "saat"
+    },
+    "command": "nmap 127.0.0.1 -p- -sT -T3 -oX outputs/SON/output.xml",
+    "scan_id": "2a7c0721-f49b-4180-8252-ad44beeea9b0"
+}
