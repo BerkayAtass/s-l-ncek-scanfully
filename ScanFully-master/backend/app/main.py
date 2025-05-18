@@ -30,10 +30,11 @@ app = FastAPI()
 # CORS ayarları düzeltildi - Frontend adreslerini ekledik
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,  # True'dan False'a değiştir - bu CORS hatalarını önleyecek
+    allow_origins=["*"],  # Geliştirme için tüm kaynaklara izin ver (Üretim için değiştirin!)
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Genişletilmiş Enum sınıfları
@@ -1326,34 +1327,20 @@ def scan_for_vulnerabilities_thread(scan_name: str, xml_path: str):
     try:
         exploit_path = os.path.join("outputs", scan_name, "exploits.json")
         
-        print(f"Zafiyet taraması başlatılıyor: {scan_name}")
-        print(f"XML path: {xml_path}")
-        print(f"Exploit path: {exploit_path}")
-        
         if not os.path.exists(xml_path):
             print(f"XML dosyası bulunamadı: {xml_path}")
             return
         
         # Eğer zafiyet dosyası yoksa, zafiyetleri ara
         if not os.path.exists(exploit_path):
-            print(f"Zafiyet taraması yapılıyor: {scan_name}")
             vulnerabilities = scan_for_vulnerabilities(scan_name, xml_path)
             
             # Exploits dosyasını kaydet
-            try:
-                print(f"Zafiyet sonuçları kaydediliyor: {exploit_path}")
-                os.makedirs(os.path.dirname(exploit_path), exist_ok=True)
+            os.makedirs(os.path.dirname(exploit_path), exist_ok=True)
+            with open(exploit_path, 'w', encoding='utf-8') as f:
+                json.dump(vulnerabilities, f, indent=4, ensure_ascii=False)
                 
-                with open(exploit_path, 'w', encoding='utf-8') as f:
-                    json.dump(vulnerabilities, f, indent=4, ensure_ascii=False)
-                
-                print(f"Zafiyet taraması tamamlandı ve kaydedildi: {scan_name}")
-            except Exception as save_error:
-                print(f"Zafiyet sonuçları kaydedilirken hata: {save_error}")
-                traceback.print_exc()
-                
-        else:
-            print(f"Zafiyet dosyası zaten mevcut: {exploit_path}")
+            print(f"Zafiyet taraması tamamlandı: {scan_name}")
             
     except Exception as e:
         print(f"Zafiyet taraması sırasında hata oluştu: {e}")
@@ -1362,9 +1349,7 @@ def scan_for_vulnerabilities_thread(scan_name: str, xml_path: str):
 def scan_for_vulnerabilities(scan_name: str, xml_path: str) -> Dict[str, Any]:
     """Birden fazla araç kullanarak zafiyetleri tarar ve sonuçları döndürür"""
     try:
-        print(f"XML'den servis bilgileri çıkarılıyor: {xml_path}")
         services = extract_services_from_xml(xml_path)
-        print(f"Bulunan servis sayısı: {len(services)}")
         
         # Sonuçları saklamak için yapı
         results = {
@@ -1373,31 +1358,32 @@ def scan_for_vulnerabilities(scan_name: str, xml_path: str) -> Dict[str, Any]:
             "services": []
         }
         
-        # Hiç servis bulunamadıysa, boş liste döndür
+        # Her servis için paralel olarak zafiyet taraması yap
         if not services:
-            print("Hiç servis bulunamadı, boş zafiyet listesi döndürülüyor")
             return results
             
-        # Her servis için sırayla zafiyet taraması yap (paralel yerine sıralı)
-        for service in services:
-            try:
-                print(f"Servis için zafiyet taraması başlatılıyor: {service}")
-                service_results = scan_service_vulnerabilities(service)
-                
-                if service_results and len(service_results.get("vulnerabilities", [])) > 0:
-                    print(f"Servis için {len(service_results['vulnerabilities'])} zafiyet bulundu")
-                    results["services"].append(service_results)
-                else:
-                    print(f"Servis için zafiyet bulunamadı: {service['ip']}:{service['port']}")
-            except Exception as e:
-                print(f"Servis zafiyet taraması sırasında hata: {e} - {service['ip']}:{service['port']}")
-                traceback.print_exc()
+        # Çok fazla servis için threadpool büyüklüğünü sınırla
+        max_parallel = min(len(services), 5)
+        with ThreadPoolExecutor(max_workers=max_parallel) as executor:
+            # Her servis için zafiyet taraması yap
+            future_to_service = {executor.submit(scan_service_vulnerabilities, service): service for service in services}
+            
+            # Sonuçları topla
+            for future in concurrent.futures.as_completed(future_to_service):
+                service = future_to_service[future]
+                try:
+                    service_results = future.result()
+                    if service_results and service_results.get("vulnerabilities"):
+                        results["services"].append(service_results)
+                except Exception as e:
+                    print(f"Servis zafiyet taraması sırasında hata: {e} - {service['ip']}:{service['port']}")
         
-        print(f"Toplam zafiyet bulunan servis sayısı: {len(results['services'])}")
         return results
+    
     except Exception as e:
         print(f"Zafiyet taraması sırasında hata: {e}")
         traceback.print_exc()
+        # Hata durumunda boş sonuç yapısı oluştur
         return {
             "timestamp": scan_name,
             "scan_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -1408,8 +1394,6 @@ def scan_for_vulnerabilities(scan_name: str, xml_path: str) -> Dict[str, Any]:
 def scan_service_vulnerabilities(service):
     """Tek bir servis için tüm zafiyet taramalarını yapar"""
     try:
-        print(f"Servis zafiyet taraması başlatılıyor: {service['ip']}:{service['port']} - {service['service']}")
-        
         service_results = {
             "ip": service["ip"],
             "port": service["port"],
@@ -1420,53 +1404,44 @@ def scan_service_vulnerabilities(service):
             "vulnerabilities": []
         }
         
-        # Her tarama yöntemini sırayla uygula (ThreadPoolExecutor yerine sıralı)
-        # 1. CVE veritabanı sorgusu (en güvenilir)
-        if service["product"]:
-            print(f"CVE veritabanında arama yapılıyor: {service['product']} {service['version']}")
-            cve_vulns = search_cve_database(service["product"], service["version"])
-            if cve_vulns:
-                print(f"CVE veritabanında {len(cve_vulns)} zafiyet bulundu")
-                service_results["vulnerabilities"].extend(cve_vulns)
-        
-        # 2. Searchsploit ile ara
-        if service["product"] and not service_results["vulnerabilities"]:
-            print(f"Searchsploit ile tarama yapılıyor: {service['product']} {service['version']}")
-            try:
-                search_vulns = search_with_searchsploit(service["product"], service["version"])
-                if search_vulns:
-                    print(f"Searchsploit ile {len(search_vulns)} zafiyet bulundu")
-                    service_results["vulnerabilities"].extend(search_vulns)
-            except Exception as e:
-                print(f"Searchsploit hatası: {e}")
-        
-        # 3. Vulners NSE script ile ara (daha yavaş ama etkili)
-        if not service_results["vulnerabilities"] and service["ip"] and service["port"]:
-            print(f"Vulners script ile tarama yapılıyor: {service['ip']}:{service['port']}")
-            try:
-                vulners_vulns = scan_with_vulners_nse(service["ip"], service["port"])
-                if vulners_vulns:
-                    print(f"Vulners ile {len(vulners_vulns)} zafiyet bulundu")
-                    service_results["vulnerabilities"].extend(vulners_vulns)
-            except Exception as e:
-                print(f"Vulners script hatası: {e}")
-        
-        # Eğer hiç zafiyet bulunamadıysa, genel bir bilgi ekle
-        if not service_results["vulnerabilities"] and service["product"]:
-            print(f"Zafiyet bulunamadı, genel bilgi ekleniyor: {service['product']}")
-            service_results["vulnerabilities"].append({
-                "tool": "service_info",
-                "title": f"{service['product']} ({service['version'] if service['version'] else 'Bilinmeyen versiyon'})",
-                "id": "INFO-1",
-                "risk": "Bilgi",
-                "description": f"{service['product']} servisi çalışıyor. Versiyon: {service['version'] if service['version'] else 'Bilinmeyen'}",
-                "reference": f"https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword={service['product']}"
-            })
+        # Farklı tarama araçlarını paralel olarak çalıştır
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            futures = []
             
+            # 1. Searchsploit ile ara
+            if service["product"]:
+                futures.append(executor.submit(search_with_searchsploit, service["product"], service["version"]))
+            
+            # 2. Vulners NSE script ile ara (eğer ip ve port bilgisi varsa)
+            if service["ip"] and service["port"]:
+                futures.append(executor.submit(scan_with_vulners_nse, service["ip"], service["port"]))
+            
+            # 3. CVE veritabanı (simüle edilmiş)
+            if service["product"]:
+                futures.append(executor.submit(search_cve_database, service["product"], service["version"]))
+            
+            # 4. Eğer HTTP/HTTPS servisi ise Nikto ile tara
+            is_web = service["service"].lower() in ["http", "https"]
+            if is_web and service["ip"] and service["port"]:
+                nikto_future = executor.submit(scan_with_nikto, service["ip"], service["port"])
+                futures.append(nikto_future)
+            
+            # 5. Eğer önemli servisler ise vulscan ile tara
+            if service["service"].lower() in ["ssh", "ftp", "telnet", "smtp", "mysql", "mssql"]:
+                futures.append(executor.submit(scan_with_vulscan_nse, service["ip"], service["port"]))
+            
+            # Tüm sonuçları topla
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    result = future.result()
+                    if result:
+                        service_results["vulnerabilities"].extend(result)
+                except Exception as e:
+                    print(f"Zafiyet tarama aracı hatası: {e}")
+                    
         return service_results
     except Exception as e:
         print(f"Servis zafiyet taraması hatası: {e}")
-        traceback.print_exc()
         return None
 
 def extract_services_from_xml(xml_path: str) -> List[Dict[str, str]]:
@@ -1573,30 +1548,28 @@ def search_with_searchsploit(product: str, version: str) -> List[Dict[str, str]]
         return vulnerabilities
 
 def scan_with_vulners_nse(ip: str, port: str) -> List[Dict[str, str]]:
-    """Vulners veritabanı kullanarak hedefte zafiyet tara (geliştirilmiş)"""
+    """Nmap Vulners script kullanarak zafiyet tara"""
     vulnerabilities = []
     
     if not ip or not port:
         return vulnerabilities
     
     try:
-        # Vulners script ile taramayı çalıştır
-        print(f"Vulners NSE script taraması başlatılıyor: {ip}:{port}")
-        
-        # Timeout ekleyerek daha güvenilir çalışmasını sağla
-        cmd = ["nmap", "--script", "vulners", "-p", port, ip, "--script-timeout", "30s"]
+        # Nmap vulners scriptini çalıştır
+        cmd = ["nmap", "--script", "vulners", "-p", port, ip]
         result = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=60)
         
+        # Çıktıyı işle - regex ile CVE ID'leri ve CVSS skorlarını çıkar
         output = result.stdout
-        print(f"Vulners çıktısı alındı, uzunluk: {len(output)} karakter")
+        vulnerabilities_found = False
         
-        # CVE ve CVSS değerlerini çıkar - regex iyileştirildi
-        cve_pattern = r'(CVE-\d{4}-\d{1,7})(?:[^\n]+?)(\d+\.\d+)'
+        # CVE ve CVSS değerlerini çıkar
+        cve_pattern = r'(CVE-\d{4}-\d{4,})\s+(\d+\.\d+)'
         matches = re.findall(cve_pattern, output)
         
-        # Sonuçları işle
         for match in matches:
             cve_id, cvss = match
+            vulnerabilities_found = True
             
             # CVSS skora göre risk seviyesini belirle
             risk = "Düşük"
@@ -1615,23 +1588,17 @@ def scan_with_vulners_nse(ip: str, port: str) -> List[Dict[str, str]]:
             
             vulnerabilities.append({
                 "tool": "vulners",
-                "title": f"Port {port} servisi güvenlik açığı",
+                "title": f"Port {port}'deki serviste güvenlik açığı",
                 "id": cve_id,
                 "risk": risk,
-                "description": f"CVSS Skoru: {cvss} - Vulners veritabanından bulunan güvenlik açığı",
+                "description": f"CVSS Skoru: {cvss}",
                 "reference": f"https://nvd.nist.gov/vuln/detail/{cve_id}"
             })
         
-        if vulnerabilities:
-            print(f"Vulners taramasında {len(vulnerabilities)} zafiyet bulundu")
-        else:
-            print("Vulners taramasında zafiyet bulunamadı")
-            
         return vulnerabilities
     
     except Exception as e:
         print(f"Vulners script çalıştırma hatası: {e}")
-        traceback.print_exc()
         return vulnerabilities
 
 def scan_with_vulscan_nse(ip: str, port: str) -> List[Dict[str, str]]:
@@ -1730,160 +1697,60 @@ def scan_with_nikto(ip: str, port: str) -> List[Dict[str, str]]:
         return vulnerabilities
 
 def search_cve_database(product: str, version: str) -> List[Dict[str, str]]:
-    """Ürün ve versiyona göre CVE veritabanında zafiyet ara (daha kapsamlı)"""
+    """CVE veritabanında zafiyet ara (simülasyon)"""
     vulnerabilities = []
     
     if not product:
         return vulnerabilities
     
-    # Yaygın servislerin bilinen güvenlik açıklarını içeren sözlük
+    # Yaygın yazılımlar için bazı ortak CVE'ler
     common_vulns = {
-        # SSH servisleri
-        "openssh": [
-            {"id": "CVE-2020-14145", "title": "OpenSSH client information disclosure", "risk": "Orta", 
-             "description": "OpenSSH 8.2 öncesi sürümlerde bilgi ifşası açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2020-14145"},
-            {"id": "CVE-2019-6111", "title": "OpenSSH scp client arbitrary file write", "risk": "Yüksek", 
-             "description": "OpenSSH scp istemcisinde uzaktan dosya yazma açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2019-6111"},
-        ],
-        "ssh": [
-            {"id": "CVE-2018-15919", "title": "SSH Username Enumeration", "risk": "Düşük", 
-             "description": "OpenSSH'de kullanıcı adı listeleme açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2018-15919"},
-        ],
-        
-        # Web servisleri
         "apache": [
-            {"id": "CVE-2021-44790", "title": "Apache HTTP Server mod_lua buffer overflow", "risk": "Kritik", 
-             "description": "Apache HTTP Server'da mod_lua script buffer overflow açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-44790"},
-            {"id": "CVE-2021-41773", "title": "Apache HTTP Server path traversal", "risk": "Kritik", 
-             "description": "Apache HTTP Server 2.4.49'da path traversal açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-41773"},
-        ],
-        "httpd": [
-            {"id": "CVE-2021-44790", "title": "Apache HTTP Server mod_lua buffer overflow", "risk": "Kritik", 
-             "description": "Apache HTTP Server'da mod_lua script buffer overflow açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-44790"},
+            {"id": "CVE-2021-44790", "title": "Apache HTTP Server buffer overflow", "risk": "Kritik", 
+             "description": "Apache HTTP Server'da mod_lua script işleme sırasında meydana gelen bellek ile ilgili bir güvenlik açığı.", 
+             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-44790"}
         ],
         "nginx": [
-            {"id": "CVE-2021-23017", "title": "Nginx resolver buffer overflow", "risk": "Yüksek", 
-             "description": "Nginx 1.20.0 öncesi sürümlerde resolver buffer overflow açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-23017"},
+            {"id": "CVE-2022-41741", "title": "Nginx Bellek Sızıntısı", "risk": "Orta", 
+             "description": "Nginx HTTP/3 uygulamasında bellek sızıntısı sorunu.", 
+             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2022-41741"}
         ],
-        
-        # FTP servisleri
-        "vsftpd": [
-            {"id": "CVE-2011-2523", "title": "VSFTPD 2.3.4 Backdoor", "risk": "Kritik", 
-             "description": "VSFTPD 2.3.4 sürümünde arka kapı açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2011-2523"},
-        ],
-        "proftpd": [
-            {"id": "CVE-2020-9273", "title": "ProFTPD remote code execution", "risk": "Kritik", 
-             "description": "ProFTPD 1.3.7rc2 öncesi uzaktan kod çalıştırma açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2020-9273"},
-        ],
-        
-        # Veritabanı servisleri
         "mysql": [
-            {"id": "CVE-2021-2307", "title": "MySQL Server privilege escalation", "risk": "Yüksek", 
-             "description": "MySQL Server'da yetki yükseltme açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-2307"},
+            {"id": "CVE-2022-21417", "title": "MySQL Yetki Yükseltme", "risk": "Yüksek", 
+             "description": "MySQL Server'da yetki yükseltme açığı.", 
+             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2022-21417"}
         ],
-        "postgresql": [
-            {"id": "CVE-2021-3677", "title": "PostgreSQL authentication bypass", "risk": "Yüksek", 
-             "description": "PostgreSQL 13.4 öncesi sürümlerde kimlik doğrulama atlatma açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-3677"},
+        "openssh": [
+            {"id": "CVE-2021-28041", "title": "OpenSSH scp açığı", "risk": "Orta", 
+             "description": "OpenSSH scp istemcisinde güvenlik açığı.", 
+             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2021-28041"}
         ],
-        
-        # RPC servisleri
-        "rpcbind": [
-            {"id": "CVE-2017-8779", "title": "rpcbind memory leak", "risk": "Yüksek", 
-             "description": "rpcbind'de bellek sızıntısı DoS açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2017-8779"},
-        ],
-        
-        # SMB servisleri
-        "samba": [
-            {"id": "CVE-2017-7494", "title": "Samba remote code execution", "risk": "Kritik", 
-             "description": "Samba'da uzaktan kod çalıştırma açığı (SambaCry)", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2017-7494"},
-        ],
-        
-        # Diğer yaygın servisler
-        "irc": [
-            {"id": "CVE-2010-2075", "title": "UnrealIRCd Backdoor", "risk": "Kritik", 
-             "description": "UnrealIRCd'de backdoor açığı", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2010-2075"},
-        ],
-        "telnet": [
-            {"id": "CVE-1999-0192", "title": "Telnet clear text credentials", "risk": "Yüksek", 
-             "description": "Telnet protokolünde şifrelerin açık metin olarak iletilmesi", 
-             "reference": "https://nvd.nist.gov/vuln/detail/CVE-1999-0192"},
+        "vsftpd": [
+            {"id": "CVE-2011-2523", "title": "VSFTPD Backdoor", "risk": "Kritik", 
+             "description": "VSFTPD 2.3.4 backdoor güvenlik açığı.", 
+             "reference": "https://nvd.nist.gov/vuln/detail/CVE-2011-2523"}
         ]
     }
     
     # Ürün adını normalize et
     product_lower = product.lower()
     
-    # Version match için ön hazırlık
-    version_match = False
-    if version:
-        version_parts = version.split('.')
-    
-    # Her ürün ve onun muhtemel alternatif adları için kontrol et
-    for service_name, vulns in common_vulns.items():
-        if service_name in product_lower:
+    # Her bir ürün için kontrol et
+    for prod, vulns in common_vulns.items():
+        if prod in product_lower:
+            # Versiyon kontrolü ekle (gerçekte daha karmaşık olmalı)
             for vuln in vulns:
-                # Versiyon kontrolü yap (basit eşleşme)
-                add_vuln = True
-                
-                # CVE açıklamasında belirli bir versiyon belirtilmişse versiyon kontrolü yap
-                if version and "öncesi" in vuln["description"] and version_parts:
-                    # Açıklamadan versiyonu çıkarmayı dene
-                    vuln_version_match = re.search(r'(\d+\.\d+\.\d+|\d+\.\d+)', vuln["description"])
-                    if vuln_version_match:
-                        vuln_version = vuln_version_match.group(1)
-                        vuln_version_parts = vuln_version.split('.')
-                        
-                        # Sürüm karşılaştırması (çok basit)
-                        if len(version_parts) >= 1 and len(vuln_version_parts) >= 1:
-                            if int(version_parts[0]) > int(vuln_version_parts[0]):
-                                add_vuln = False  # Sürüm daha yeni, zafiyet yok
-                            elif int(version_parts[0]) == int(vuln_version_parts[0]) and len(version_parts) > 1 and len(vuln_version_parts) > 1:
-                                if int(version_parts[1]) > int(vuln_version_parts[1]):
-                                    add_vuln = False  # Sürüm daha yeni, zafiyet yok
-                
-                if add_vuln:
-                    vuln_copy = vuln.copy()
-                    vuln_copy["tool"] = "cvedetails"
-                    vulnerabilities.append(vuln_copy)
-    
-    # Eğer hiç zafiyet bulunamadıysa ve özel bir servis varsa, daha genel bir CVE araması yap
-    if not vulnerabilities and product:
-        # Jenerik bir zafiyet bilgisi ekle
-        vulnerabilities.append({
-            "tool": "general_cve",
-            "title": f"{product} Servisi Potansiyel Zafiyetleri",
-            "id": "INFO-CVE",
-            "risk": "Bilgi",
-            "description": f"{product} {version if version else ''} servisine ait olası zafiyetler kontrol edilmeli.",
-            "reference": f"https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword={product}"
-        })
+                vuln["tool"] = "cvedetails"
+                vulnerabilities.append(vuln)
     
     return vulnerabilities
 
 @app.get("/scan/{scan_name}/vulnerabilities")
 async def get_scan_vulnerabilities(scan_name: str):
-    """Bir tarama için zafiyet bilgilerini döndürür - geliştirilmiş versiyon"""
+    """Bir tarama için zafiyet bilgilerini döndürür"""
     try:
         xml_path = os.path.join("outputs", scan_name, "output.xml")
         exploit_path = os.path.join("outputs", scan_name, "exploits.json")
-        
-        print(f"Zafiyet bilgileri istendi: {scan_name}")
-        print(f"XML dosyası mevcut: {os.path.exists(xml_path)}")
-        print(f"Exploit dosyası mevcut: {os.path.exists(exploit_path)}")
         
         if not os.path.exists(xml_path):
             return JSONResponse(content={
@@ -1893,12 +1760,10 @@ async def get_scan_vulnerabilities(scan_name: str):
                 "services": []
             })
         
-        # Zafiyet dosyası yoksa veya boşsa, yeniden tarama yap
-        if not os.path.exists(exploit_path) or os.path.getsize(exploit_path) == 0:
-            # Tarama işlemini başlat
-            print(f"Zafiyet dosyası bulunamadı veya boş, tarama başlatılıyor: {scan_name}")
+        # Eğer zafiyet dosyası yoksa, zafiyetleri ara
+        if not os.path.exists(exploit_path):
+            # Eğer henüz yoksa başlat ve bekliyor mesajı döndür
             scan_for_vulnerabilities_background(scan_name, xml_path)
-            
             return JSONResponse(content={
                 "timestamp": scan_name,
                 "scan_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -1908,47 +1773,11 @@ async def get_scan_vulnerabilities(scan_name: str):
             })
         else:
             # Zafiyet dosyasını oku
-            print(f"Zafiyet dosyası okunuyor: {exploit_path}")
-            try:
-                with open(exploit_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    if not content.strip():
-                        raise ValueError("Dosya içeriği boş")
-                    
-                    vulnerabilities = json.loads(content)
-                
-                # Servis listesi boşsa ve tarama dosyası mevcutsa
-                if not vulnerabilities.get('services') and os.path.exists(xml_path):
-                    print("exploits.json boş servis listesi içeriyor, yeniden taranıyor")
-                    os.remove(exploit_path)  # Dosyayı sil
-                    scan_for_vulnerabilities_background(scan_name, xml_path)
-                    
-                    return JSONResponse(content={
-                        "timestamp": scan_name,
-                        "scan_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        "message": "Zafiyet taraması yeniden başlatıldı, sonuçlar hazırlanıyor...",
-                        "status": "processing",
-                        "services": []
-                    })
-                
-                print(f"Zafiyet dosyası başarıyla okundu, servis sayısı: {len(vulnerabilities.get('services', []))}")
-                return JSONResponse(content=vulnerabilities)
-                
-            except (json.JSONDecodeError, ValueError) as e:
-                print(f"JSON okuma hatası: {e}")
-                # Bozuk dosyayı sil ve yeniden tarama başlat
-                os.remove(exploit_path)
-                scan_for_vulnerabilities_background(scan_name, xml_path)
-                
-                return JSONResponse(content={
-                    "timestamp": scan_name,
-                    "scan_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    "message": "Zafiyet dosyası bozuk, yeniden tarama başlatıldı...",
-                    "status": "processing",
-                    "services": []
-                })
+            with open(exploit_path, 'r', encoding='utf-8') as f:
+                vulnerabilities = json.load(f)
+            
+            return JSONResponse(content=vulnerabilities)
     except Exception as e:
-        print(f"Zafiyet verileri işlenirken hata: {e}")
         traceback.print_exc()
         return JSONResponse(content={
             "timestamp": scan_name,
