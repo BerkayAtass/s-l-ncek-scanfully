@@ -1,12 +1,12 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow, 
+  Paper 
 } from '@mui/material';
 
 function BasicTable({ rows, columns }) {
@@ -20,7 +20,7 @@ function BasicTable({ rows, columns }) {
         <TableHead>
           <TableRow>
             {columns.map((column) => (
-              <TableCell
+              <TableCell 
                 key={column.field}
                 style={{ width: column.width }}
               >

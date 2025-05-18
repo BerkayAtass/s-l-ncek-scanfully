@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Appbar from '../components/header';
-import {
-  Card, CardContent, CardActions, Button, Typography, Chip, Grid, Box,
+import { 
+  Card, CardContent, CardActions, Button, Typography, Chip, Grid, Box, 
   CircularProgress, Alert, Divider, LinearProgress, Badge, Tab, Tabs,
   IconButton, Tooltip, MenuItem, Menu, TextField, InputAdornment,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
@@ -37,7 +37,7 @@ function OldScan() {
   const [sortOption, setSortOption] = useState('date-desc');
   const [filterOption, setFilterOption] = useState('all');
   const { theme, colors } = useSelector((store) => store.constant);
-
+  
   // Yeni: Aktif taramalar için tablo verileri
   const [activeScanTables, setActiveScanTables] = useState({});
   const [loadingTables, setLoadingTables] = useState({});
@@ -48,20 +48,20 @@ function OldScan() {
   const fetchActiveScanTables = async () => {
     // Önceki aktif taramalar için tablolar artık yüklenmekte değil
     setLoadingTables({});
-
+    
     // Yeni yükleme durumlarını oluştur
     const newLoadingStates = {};
     activeScans.forEach(scan => {
       newLoadingStates[scan.scan_name] = true;
     });
     setLoadingTables(newLoadingStates);
-
+    
     // Her aktif tarama için tablo verilerini çek
     const tables = {};
     const promises = activeScans.map(async (scan) => {
       try {
         if (!scan.scan_name) return;
-
+        
         const tableData = await getScanTable(scan.scan_name);
         tables[scan.scan_name] = tableData;
       } catch (err) {
@@ -74,7 +74,7 @@ function OldScan() {
         }));
       }
     });
-
+    
     await Promise.all(promises);
     setActiveScanTables(tables);
     setTableDataLoaded(true);
@@ -85,16 +85,16 @@ function OldScan() {
     setLoading(true);
     try {
       console.log("Tüm tarama verileri isteniyor...");
-
+      
       // Parallel data fetching with Promise.all
       const [scansResponse, activeScansResponse] = await Promise.all([
         getScans(),
         getActiveScans()
       ]);
-
+      
       console.log("Tamamlanan taramalar:", scansResponse);
       console.log("Aktif taramalar:", activeScansResponse);
-
+      
       // Process completed scans
       if (scansResponse && scansResponse.scans && Array.isArray(scansResponse.scans)) {
         setScans(scansResponse.scans);
@@ -102,12 +102,12 @@ function OldScan() {
         console.warn("Tamamlanan tarama verisi uygun formatta değil:", scansResponse);
         setScans([]);
       }
-
+  
       // Process active scans - veri yapısı kontrollerini iyileştirme
       if (activeScansResponse) {
         // API yanıt formatı değişmiş olabilir, farklı olası yapıları kontrol et
         let activeScansList = [];
-
+        
         if (activeScansResponse.active_scans && Array.isArray(activeScansResponse.active_scans)) {
           activeScansList = activeScansResponse.active_scans;
           console.log(`${activeScansList.length} aktif tarama bulundu (active_scans)`);
@@ -118,10 +118,10 @@ function OldScan() {
           activeScansList = activeScansResponse;
           console.log(`${activeScansList.length} aktif tarama bulundu (doğrudan dizi)`);
         }
-
+        
         // Aktif taramaları state'e kaydet
         setActiveScans(activeScansList);
-
+        
         // Eğer aktif tarama sekmesindeyse ve tablo görünümündeyse, tablo verilerini getir
         if (tabValue === 1 && viewMode === 'table' && activeScansList.length > 0) {
           fetchActiveScanTables();
@@ -130,7 +130,7 @@ function OldScan() {
         console.warn("Aktif tarama verisi alınamadı:", activeScansResponse);
         setActiveScans([]);
       }
-
+  
       setError(null);
     } catch (err) {
       console.error("Tarama verileri alınırken hata:", err);
@@ -144,17 +144,17 @@ function OldScan() {
   // Initial data load
   useEffect(() => {
     fetchData();
-
+    
     // Set up interval to refresh active scans every 10 seconds
     const intervalId = setInterval(() => {
       console.log("Aktif taramalar periyodik kontrolü yapılıyor...");
       getActiveScans()
         .then(response => {
           console.log("Periyodik kontrol yanıtı:", response);
-
+          
           // API yanıt formatı değişmiş olabilir, farklı olası yapıları kontrol et
           let activeScansList = [];
-
+          
           if (response && response.active_scans && Array.isArray(response.active_scans)) {
             activeScansList = response.active_scans;
           } else if (response && response.activeScans && Array.isArray(response.activeScans)) {
@@ -162,11 +162,11 @@ function OldScan() {
           } else if (Array.isArray(response)) {
             activeScansList = response;
           }
-
+          
           if (activeScansList.length > 0) {
             console.log(`${activeScansList.length} aktif tarama güncellendi`);
             setActiveScans(activeScansList);
-
+            
             // Eğer aktif tarama sekmesindeyse ve tablo görünümündeyse, tablo verilerini güncelle
             if (tabValue === 1 && viewMode === 'table') {
               fetchActiveScanTables();
@@ -179,7 +179,7 @@ function OldScan() {
           console.error("Aktif tarama periyodik güncellemesi hatası:", err);
         });
     }, 10000);
-
+    
     return () => clearInterval(intervalId);
   }, [tabValue, viewMode]);
 
@@ -211,7 +211,7 @@ function OldScan() {
         type: 'completed'
       }))
     ];
-
+    
     // Apply search filter
     let filtered = combined;
     if (searchTerm) {
@@ -222,7 +222,7 @@ function OldScan() {
         return scanName.toLowerCase().includes(term) || target.toLowerCase().includes(term);
       });
     }
-
+    
     // Apply type filter
     if (filterOption !== 'all') {
       filtered = filtered.filter(scan => {
@@ -233,13 +233,13 @@ function OldScan() {
         return true;
       });
     }
-
+    
     // Apply sorting
     filtered.sort((a, b) => {
       const dateA = new Date(a.info?.date ? `${a.info.date} ${a.info.time || ''}` : a.created_at || 0);
       const dateB = new Date(b.info?.date ? `${b.info.date} ${b.info.time || ''}` : b.created_at || 0);
-
-      switch (sortOption) {
+      
+      switch(sortOption) {
         case 'date-asc':
           return dateA - dateB;
         case 'date-desc':
@@ -252,7 +252,7 @@ function OldScan() {
           return dateB - dateA;
       }
     });
-
+    
     setCombinedScans(filtered);
   }, [scans, activeScans, searchTerm, sortOption, filterOption]);
 
@@ -265,12 +265,12 @@ function OldScan() {
       fetchActiveScanTables();
     }
   };
-
+  
   // Tab handling
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     setFilterOption(newValue === 0 ? 'all' : newValue === 1 ? 'active' : 'completed');
-
+    
     // Eğer aktif taramalara geçilirse ve tablo modundaysa tablo verilerini yükle
     if (newValue === 1 && viewMode === 'table' && !tableDataLoaded) {
       fetchActiveScanTables();
@@ -281,34 +281,34 @@ function OldScan() {
   const handleSortClick = (event) => {
     setSortAnchorEl(event.currentTarget);
   };
-
+  
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
   };
-
+  
   const handleSortClose = () => {
     setSortAnchorEl(null);
   };
-
+  
   const handleFilterClose = () => {
     setFilterAnchorEl(null);
   };
-
+  
   const handleSortSelect = (option) => {
     setSortOption(option);
     handleSortClose();
   };
-
+  
   const handleFilterSelect = (option) => {
     setFilterOption(option);
     handleFilterClose();
   };
-
+  
   // Görünüm modunu değiştir
   const toggleViewMode = () => {
     const newMode = viewMode === 'cards' ? 'table' : 'cards';
     setViewMode(newMode);
-
+    
     // Eğer aktif taramalar sekmesindeyse ve tablo moduna geçildiyse ve henüz yüklenmemişse
     if (tabValue === 1 && newMode === 'table' && !tableDataLoaded) {
       fetchActiveScanTables();
@@ -331,19 +331,19 @@ function OldScan() {
   // Port durumuna göre hücre renklendirme
   const getStatusStyle = (status) => {
     if (!status) return {};
-
-    switch (status.toLowerCase()) {
+    
+    switch(status.toLowerCase()) {
       case 'open':
-        return {
-          backgroundColor: 'rgba(76, 175, 80, 0.1)',
-          fontWeight: 'bold'
+        return { 
+          backgroundColor:  'rgba(76, 175, 80, 0.1)', 
+          fontWeight: 'bold' 
         };
       case 'closed':
-        return {
+        return { 
           backgroundColor: 'rgba(244, 67, 54, 0.1)'
         };
       case 'filtered':
-        return {
+        return { 
           backgroundColor: 'rgba(255, 152, 0, 0.1)'
         };
       default:
@@ -360,7 +360,7 @@ function OldScan() {
           <Typography variant="h4" sx={{ mb: { xs: 2, md: 0 } }}>
             Tarama Listesi
           </Typography>
-
+          
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               placeholder="Tarama ara..."
@@ -376,33 +376,33 @@ function OldScan() {
               }}
               sx={{ width: { xs: '100%', sm: '200px' } }}
             />
-
+            
             <Tooltip title="Sırala">
               <IconButton onClick={handleSortClick}>
                 <SortIcon />
               </IconButton>
             </Tooltip>
-
+            
             <Tooltip title="Filtrele">
               <IconButton onClick={handleFilterClick}>
                 <FilterListIcon />
               </IconButton>
             </Tooltip>
-
+            
             <Tooltip title={viewMode === 'cards' ? 'Tablo Görünümü' : 'Kart Görünümü'}>
               <IconButton onClick={toggleViewMode}>
                 {viewMode === 'cards' ? <ViewListIcon /> : <GridViewIcon />}
               </IconButton>
             </Tooltip>
-
+            
             <Tooltip title="Yenile">
               <IconButton onClick={handleRefresh} disabled={refreshing}>
                 {refreshing ? <CircularProgress size={24} /> : <RefreshIcon />}
               </IconButton>
             </Tooltip>
-
-            <Button
-              variant="contained"
+            
+            <Button 
+              variant="contained" 
               color="primary"
               startIcon={<PlayArrowIcon />}
               onClick={() => navigate('../scan')}
@@ -411,7 +411,7 @@ function OldScan() {
             </Button>
           </Box>
         </Box>
-
+        
         {/* Sorting menu */}
         <Menu
           anchorEl={sortAnchorEl}
@@ -431,7 +431,7 @@ function OldScan() {
             İsim (Z-A)
           </MenuItem>
         </Menu>
-
+        
         {/* Filtering menu */}
         <Menu
           anchorEl={filterAnchorEl}
@@ -455,34 +455,34 @@ function OldScan() {
             UDP Taramaları
           </MenuItem>
         </Menu>
-
+        
         {/* Error display */}
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
           </Alert>
         )}
-
+        
         {/* Tabs for filtering */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
           <Tabs value={tabValue} onChange={handleTabChange} aria-label="scan tabs">
             <Tab label={`Tümü (${combinedScans.length})`} />
-            <Tab
+            <Tab 
               label={
                 <Badge badgeContent={activeScans.length} color="error" max={99} showZero={false}>
                   Aktif Taramalar
                 </Badge>
-              }
+              } 
             />
             <Tab label={`Tamamlanan (${scans.length})`} />
           </Tabs>
         </Box>
-
+        
         {/* Refresh progress */}
         {refreshing && (
           <LinearProgress sx={{ mb: 3 }} />
         )}
-
+        
         {/* AKTIF TARAMALAR TABLO GÖRÜNÜMÜ */}
         {tabValue === 1 && viewMode === 'table' && (
           <Box>
@@ -491,7 +491,7 @@ function OldScan() {
                 <Typography variant="h6" sx={{ mb: 2, opacity: 0.7 }}>
                   Aktif tarama bulunamadı.
                 </Typography>
-                <Button
+                <Button 
                   variant="contained"
                   color="primary"
                   startIcon={<PlayArrowIcon />}
@@ -505,22 +505,22 @@ function OldScan() {
               activeScans.map((scan, index) => {
                 const scanTableData = activeScanTables[scan.scan_name];
                 const isLoading = loadingTables[scan.scan_name];
-
+                
                 return (
-                  <Paper
-                    key={index}
-                    elevation={3}
-                    sx={{
-                      mb: 4,
+                  <Paper 
+                    key={index} 
+                    elevation={3} 
+                    sx={{ 
+                      mb: 4, 
                       backgroundColor: theme ? colors.cardDarkColor : colors.cardLightColor,
                       color: theme ? colors.darkText : colors.lightText,
                       overflow: 'hidden'
                     }}
                   >
-                    <Box sx={{
-                      p: 2,
-                      display: 'flex',
-                      justifyContent: 'space-between',
+                    <Box sx={{ 
+                      p: 2, 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
                       alignItems: 'center',
                       backgroundColor: theme ? 'rgba(255, 0, 0, 0.05)' : 'rgba(184, 0, 0, 0.03)'
                     }}>
@@ -530,22 +530,22 @@ function OldScan() {
                           {scan.target} {scan.progress ? `(${scan.progress}%)` : ''}
                         </Typography>
                       </Box>
-
+                      
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Chip
-                          label={`Durum: ${scan.status === 'running' ? 'Çalışıyor' :
-                            scan.status === 'queued' ? 'Sırada' :
-                              scan.status === 'completed' ? 'Tamamlandı' :
-                                scan.status === 'failed' ? 'Hata' : 'Bilinmiyor'}`}
-                          color={scan.status === 'running' ? 'warning' :
-                            scan.status === 'queued' ? 'info' :
-                              scan.status === 'completed' ? 'success' :
+                        <Chip 
+                          label={`Durum: ${scan.status === 'running' ? 'Çalışıyor' : 
+                                        scan.status === 'queued' ? 'Sırada' : 
+                                        scan.status === 'completed' ? 'Tamamlandı' : 
+                                        scan.status === 'failed' ? 'Hata' : 'Bilinmiyor'}`}
+                          color={scan.status === 'running' ? 'warning' : 
+                                scan.status === 'queued' ? 'info' : 
+                                scan.status === 'completed' ? 'success' : 
                                 scan.status === 'failed' ? 'error' : 'default'}
                           size="small"
                         />
-
-                        <Button
-                          variant="outlined"
+                        
+                        <Button 
+                          variant="outlined" 
                           size="small"
                           onClick={() => navigate(`../scanDetails/${scan.scan_name}`)}
                         >
@@ -553,16 +553,16 @@ function OldScan() {
                         </Button>
                       </Box>
                     </Box>
-
+                    
                     {/* İlerleme çubuğu */}
                     {scan.status === 'running' && (
-                      <LinearProgress
-                        variant="determinate"
-                        value={scan.progress || 0}
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={scan.progress || 0} 
                         sx={{ height: 4 }}
                       />
                     )}
-
+                    
                     {/* Tablo verileri */}
                     {isLoading ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
@@ -574,9 +574,9 @@ function OldScan() {
                           <TableHead>
                             <TableRow>
                               {scanTableData.columns.map((column, colIndex) => (
-                                <TableCell
+                                <TableCell 
                                   key={colIndex}
-                                  sx={{
+                                  sx={{ 
                                     backgroundColor: theme ? 'rgb(255, 0, 0)' : 'rgb(0, 68, 255)',
                                     color: theme ? colors.darkText : colors.lightText,
                                     fontWeight: 'bold'
@@ -590,10 +590,10 @@ function OldScan() {
                           <TableBody>
                             {scanTableData.data.length > 0 ? (
                               scanTableData.data.map((row, rowIndex) => (
-                                <TableRow
+                                <TableRow 
                                   key={rowIndex}
-                                  sx={{
-                                    '&:nth-of-type(odd)': {
+                                  sx={{ 
+                                    '&:nth-of-type(odd)': { 
                                       backgroundColor: theme ? 'rgb(255, 0, 0)' : 'rgba(255, 0, 0, 0.03)'
                                     }
                                   }}
@@ -602,11 +602,11 @@ function OldScan() {
                                     // Kolon ismi "state" veya "durum" ise ve değer "open" ise hücre stilini değiştir
                                     const columnName = scanTableData.columns[cellIndex]?.toLowerCase();
                                     const isStateColumn = columnName === 'state' || columnName === 'durum';
-
+                                    
                                     return (
-                                      <TableCell
+                                      <TableCell 
                                         key={cellIndex}
-                                        sx={{
+                                        sx={{ 
                                           color: theme ? colors.darkText : colors.lightText,
                                           ...(isStateColumn ? getStatusStyle(cell) : {})
                                         }}
@@ -619,9 +619,9 @@ function OldScan() {
                               ))
                             ) : (
                               <TableRow>
-                                <TableCell
+                                <TableCell 
                                   colSpan={scanTableData.columns.length}
-                                  sx={{
+                                  sx={{ 
                                     textAlign: 'center',
                                     color: theme ? colors.darkText : colors.lightText,
                                     py: 3
@@ -647,7 +647,7 @@ function OldScan() {
             )}
           </Box>
         )}
-
+        
         {/* Kartlar ve normal görünüm */}
         {(tabValue !== 1 || viewMode === 'cards') && (
           <Grid container spacing={3}>
@@ -657,14 +657,14 @@ function OldScan() {
                 const isActive = scan.type === 'active';
                 const scanName = isActive ? scan.scan_name : scan.name || "Adsız Tarama";
                 const scanInfo = scan.info || {};
-                const scanDate = isActive
+                const scanDate = isActive 
                   ? new Date(scan.created_at).toLocaleString()
                   : scanInfo.date ? `${scanInfo.date} ${scanInfo.time || ''}` : "Tarih bilgisi yok";
                 const target = isActive ? scan.target : scanInfo.target || "Bilinmeyen hedef";
                 const targetType = scanInfo.target_type || "";
                 const progress = isActive ? scan.progress : 100;
                 const status = isActive ? scan.status : "completed";
-
+                
                 // Status chip color
                 const getStatusColor = () => {
                   if (status === "running") return "warning";
@@ -673,7 +673,7 @@ function OldScan() {
                   if (status === "failed") return "error";
                   return "default";
                 };
-
+                
                 // Status text
                 const getStatusText = () => {
                   if (status === "running") return "Çalışıyor";
@@ -682,11 +682,11 @@ function OldScan() {
                   if (status === "failed") return "Hata";
                   return "Bilinmiyor";
                 };
-
+                
                 return (
                   <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                    <Card
-                      sx={{
+                    <Card 
+                      sx={{ 
                         backgroundColor: theme ? colors.cardDarkColor : colors.cardLightColor,
                         height: '100%',
                         display: 'flex',
@@ -707,19 +707,19 @@ function OldScan() {
                           <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
                             {scanName}
                           </Typography>
-
-                          <Chip
+                          
+                          <Chip 
                             label={getStatusText()}
                             size="small"
                             color={getStatusColor()}
                           />
                         </Box>
-
+                        
                         {isActive && (
                           <Box sx={{ width: '100%', mb: 2 }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={progress}
+                            <LinearProgress 
+                              variant="determinate" 
+                              value={progress} 
                               color={getStatusColor() !== "default" ? getStatusColor() : "primary"}
                             />
                             <Typography variant="body2" color="text.secondary" align="right">
@@ -727,47 +727,47 @@ function OldScan() {
                             </Typography>
                           </Box>
                         )}
-
+                        
                         <Divider sx={{ my: 1 }} />
-
+                        
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.5, mb: 0.5 }}>
                           <AccessTimeIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
                           <Typography variant="body2" color="text.secondary">
                             {scanDate}
                           </Typography>
                         </Box>
-
+                        
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                           <TargetIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
                           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {target}
                           </Typography>
                         </Box>
-
+                        
                         {scanInfo.port_option && (
                           <Typography variant="body2" color="text.secondary">
                             <strong>Port:</strong> {scanInfo.port_option} {scanInfo.port_value ? `(${scanInfo.port_value})` : ''}
                           </Typography>
                         )}
-
+                        
                         {scanInfo.scan_type && (
                           <Typography variant="body2" color="text.secondary">
                             <strong>Tarama:</strong> {scanInfo.scan_type}
                           </Typography>
                         )}
-
+                        
                         <Box sx={{ display: 'flex', mt: 1, gap: 0.5, flexWrap: 'wrap' }}>
                           {targetType && (
-                            <Chip
+                            <Chip 
                               label={targetType}
                               size="small"
                               color="primary"
                               variant="outlined"
                             />
                           )}
-
+                          
                           {scanInfo.service_detection && scanInfo.service_detection !== "none" && (
-                            <Chip
+                            <Chip 
                               label={scanInfo.service_detection}
                               size="small"
                               color="secondary"
@@ -776,31 +776,31 @@ function OldScan() {
                           )}
                         </Box>
                       </CardContent>
-
+                      
                       <CardActions>
-                        <Button
+                        <Button 
                           variant="outlined"
-                          size="small"
+                          size="small" 
                           startIcon={<SubjectIcon />}
                           onClick={() => navigate(`../scanDetails/${scanName}?tab=info`)}
                           sx={{ flexGrow: 1 }}
                         >
                           Detaylar
                         </Button>
-
-                        <Button
+                        
+                        <Button 
                           variant="outlined"
-                          size="small"
+                          size="small" 
                           startIcon={<AssessmentIcon />}
                           onClick={() => navigate(`../scanDetails/${scanName}?tab=results`)}
                           sx={{ flexGrow: 1 }}
                         >
                           Sonuçlar
                         </Button>
-
-                        <Button
+                        
+                        <Button 
                           variant="outlined"
-                          size="small"
+                          size="small" 
                           color="error"
                           startIcon={<SecurityIcon />}
                           onClick={() => navigate(`../scanDetails/${scanName}?tab=vulnerabilities`)}
@@ -819,8 +819,8 @@ function OldScan() {
                   {searchTerm ? "Arama kriterlerine uygun tarama bulunamadı." : "Henüz tarama bulunmuyor."}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    variant="contained"
+                  <Button 
+                    variant="contained" 
                     color="primary"
                     startIcon={<PlayArrowIcon />}
                     onClick={() => navigate('../scan')}
@@ -832,7 +832,7 @@ function OldScan() {
             )}
           </Grid>
         )}
-
+        
         {/* Aktif taramalar sekmesi için eklenen özel kart görünümü */}
         {tabValue === 1 && viewMode === 'cards' && (
           <Grid item xs={12}>
@@ -840,8 +840,8 @@ function OldScan() {
               <Grid container spacing={3}>
                 {activeScans.map((scan, index) => (
                   <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                    <Card
-                      sx={{
+                    <Card 
+                      sx={{ 
                         backgroundColor: theme ? colors.cardDarkColor : colors.cardLightColor,
                         height: '100%',
                         display: 'flex',
@@ -860,41 +860,41 @@ function OldScan() {
                           <Typography gutterBottom variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
                             {scan.scan_name || "İsimsiz Tarama"}
                           </Typography>
-
-                          <Chip
-                            label={scan.status === "running" ? "Çalışıyor" :
-                              scan.status === "queued" ? "Sırada" :
-                                scan.status === "completed" ? "Tamamlandı" :
+                          
+                          <Chip 
+                            label={scan.status === "running" ? "Çalışıyor" : 
+                                  scan.status === "queued" ? "Sırada" : 
+                                  scan.status === "completed" ? "Tamamlandı" : 
                                   scan.status === "failed" ? "Hata" : "Bilinmiyor"}
                             size="small"
-                            color={scan.status === "running" ? "warning" :
-                              scan.status === "queued" ? "info" :
-                                scan.status === "completed" ? "success" :
+                            color={scan.status === "running" ? "warning" : 
+                                  scan.status === "queued" ? "info" : 
+                                  scan.status === "completed" ? "success" : 
                                   scan.status === "failed" ? "error" : "default"}
                           />
                         </Box>
-
+                        
                         {/* Progress bar */}
                         <Box sx={{ width: '100%', mb: 2 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={scan.progress || 0}
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={scan.progress || 0} 
                             color={scan.status === "running" ? "warning" : "primary"}
                           />
                           <Typography variant="body2" color="text.secondary" align="right">
                             {scan.progress || 0}%
                           </Typography>
                         </Box>
-
+                        
                         <Divider sx={{ my: 1 }} />
-
+                        
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 1.5, mb: 0.5 }}>
                           <AccessTimeIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
                           <Typography variant="body2" color="text.secondary">
                             {new Date(scan.created_at).toLocaleString()}
                           </Typography>
                         </Box>
-
+                        
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
                           <TargetIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
                           <Typography variant="body2" color="text.secondary" sx={{ maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -902,11 +902,11 @@ function OldScan() {
                           </Typography>
                         </Box>
                       </CardContent>
-
+                      
                       <CardActions>
-                        <Button
+                        <Button 
                           variant="contained"
-                          size="small"
+                          size="small" 
                           onClick={() => navigate(`../scanDetails/${scan.scan_name}`)}
                           sx={{ flexGrow: 1 }}
                         >
@@ -922,8 +922,8 @@ function OldScan() {
                 <Typography variant="h6" sx={{ mb: 2, opacity: 0.7 }}>
                   Şu anda aktif tarama bulunmuyor.
                 </Typography>
-                <Button
-                  variant="contained"
+                <Button 
+                  variant="contained" 
                   color="primary"
                   onClick={() => navigate('../scan')}
                 >

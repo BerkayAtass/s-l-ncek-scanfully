@@ -16,7 +16,7 @@ const initialState = {
             icon: <RadarIcon/>
         }
     ],
-  theme:true,
+  theme:false,
   colors: {
     headerLightColor: "rgba(161, 199, 222, 0.91)",
     bodyLightColor: "white",

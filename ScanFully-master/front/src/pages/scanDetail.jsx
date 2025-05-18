@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
+import { 
   Box, Typography, Paper, CircularProgress, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   FormControlLabel, Checkbox, FormGroup, Button, TextField,
@@ -39,7 +39,7 @@ const getScanVulnerabilities = async (scanName) => {
       },
       timeout: 10000 // 10 saniye timeout
     });
-
+    
     console.log('Zafiyet yanıtı alındı:', response.data);
     return response.data;
   } catch (error) {
@@ -51,17 +51,17 @@ const getScanVulnerabilities = async (scanName) => {
 function ScanResultsTable() {
   const { id } = useParams();
   const { theme, colors } = useSelector((store) => store.constant);
-
+  
   const [tableData, setTableData] = useState({ columns: [], data: [] });
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  
   // Filtre durumları
   const [onlyOpenPorts, setOnlyOpenPorts] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-
+  
   // İstatistikler
   const [stats, setStats] = useState({
     totalRows: 0,
@@ -75,43 +75,43 @@ function ScanResultsTable() {
   const [vulnerabilityData, setVulnerabilityData] = useState(null);
   const [vulnerabilityLoading, setVulnerabilityLoading] = useState(false);
   const [vulnerabilityError, setVulnerabilityError] = useState(null);
-
+  
   useEffect(() => {
     fetchTableData();
   }, [id]);
-
+  
   useEffect(() => {
     if (tableData.data.length > 0) {
       applyFilters();
     }
   }, [tableData, onlyOpenPorts, searchTerm]);
-
+  
   // Zafiyet verilerini almak için useEffect
   useEffect(() => {
     if (activeTab === 'vulnerabilities') {
       fetchVulnerabilityData();
     }
   }, [activeTab, id]);
-
+  
   // Tablo verilerini API'den çek
   const fetchTableData = async () => {
     try {
       setLoading(true);
       setError(null);
-
+      
       console.log(`Tarama tablo verileri alınıyor: ${id}`);
       const response = await getScanTable(id);
-
+      
       if (!response || !response.data || !Array.isArray(response.data)) {
         setTableData({ columns: ['Bilgi'], data: [['Veri bulunamadı']] });
         setFilteredData([['Veri bulunamadı']]);
         setLoading(false);
         return;
       }
-
+      
       setTableData(response);
       console.log('Tarama tablo verileri alındı:', response);
-
+      
       setLoading(false);
     } catch (err) {
       console.error('Tarama tablo verileri alınırken hata:', err);
@@ -119,18 +119,18 @@ function ScanResultsTable() {
       setLoading(false);
     }
   };
-
+  
   // Zafiyet verilerini getir fonksiyonu
   const fetchVulnerabilityData = async () => {
     try {
       setVulnerabilityLoading(true);
       setVulnerabilityError(null);
-
+      
       console.log(`Zafiyet verileri alınıyor: ${id}`);
       const data = await getScanVulnerabilities(id);
       console.log('Zafiyet verileri:', data);
       setVulnerabilityData(data);
-
+      
       setVulnerabilityLoading(false);
     } catch (err) {
       console.error('Zafiyet verileri alınırken hata:', err);
@@ -138,7 +138,7 @@ function ScanResultsTable() {
       setVulnerabilityLoading(false);
     }
   };
-
+  
   // Filtreleri uygula
   const applyFilters = () => {
     if (!tableData.data || !Array.isArray(tableData.data) || tableData.data.length === 0) {
@@ -146,54 +146,54 @@ function ScanResultsTable() {
       updateStats([]);
       return;
     }
-
+    
     let data = [...tableData.data];
-
+    
     // Sütun indekslerini bul
     const stateIndex = tableData.columns.findIndex(col => col.toLowerCase() === 'state' || col.toLowerCase() === 'durum');
     const serviceIndex = tableData.columns.findIndex(col => col.toLowerCase() === 'service' || col.toLowerCase() === 'servis');
     const ipIndex = tableData.columns.findIndex(col => col.toLowerCase() === 'ip');
-
+    
     // Sadece açık portlar filtresi
     if (onlyOpenPorts && stateIndex !== -1) {
       data = data.filter(row => row[stateIndex] === 'open');
     }
-
+    
     // Arama filtresi
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      data = data.filter(row =>
-        row.some(cell =>
+      data = data.filter(row => 
+        row.some(cell => 
           cell && cell.toString().toLowerCase().includes(term)
         )
       );
     }
-
+    
     setFilteredData(data);
     updateStats(data, { stateIndex, serviceIndex, ipIndex });
   };
-
+  
   // İstatistikleri güncelle
   const updateStats = (data, indexes = {}) => {
     if (!data || !Array.isArray(data)) return;
-
+    
     const { stateIndex = -1, serviceIndex = -1, ipIndex = -1 } = indexes;
-
+    
     // Açık portları say
-    const openPorts = stateIndex !== -1
-      ? data.filter(row => row[stateIndex] === 'open').length
+    const openPorts = stateIndex !== -1 
+      ? data.filter(row => row[stateIndex] === 'open').length 
       : 0;
-
+    
     // Benzersiz servisleri say
-    const uniqueServices = serviceIndex !== -1
-      ? new Set(data.filter(row => row[serviceIndex]).map(row => row[serviceIndex])).size
+    const uniqueServices = serviceIndex !== -1 
+      ? new Set(data.filter(row => row[serviceIndex]).map(row => row[serviceIndex])).size 
       : 0;
-
+    
     // Benzersiz IP'leri say
-    const ipAddresses = ipIndex !== -1
-      ? new Set(data.filter(row => row[ipIndex]).map(row => row[ipIndex])).size
+    const ipAddresses = ipIndex !== -1 
+      ? new Set(data.filter(row => row[ipIndex]).map(row => row[ipIndex])).size 
       : 0;
-
+    
     setStats({
       totalRows: data.length,
       openPorts,
@@ -201,24 +201,24 @@ function ScanResultsTable() {
       ipAddresses
     });
   };
-
+  
   // CSV olarak dışa aktar
   const exportAsCSV = () => {
     if (!filteredData.length || !tableData.columns.length) return;
-
+    
     // Başlık satırı
     const headers = tableData.columns.join(',');
-
+    
     // Veri satırları
-    const rows = filteredData.map(row =>
+    const rows = filteredData.map(row => 
       row.map(cell => {
         const value = cell || '';
         return value.toString().includes(',') ? `"${value}"` : value;
       }).join(',')
     ).join('\n');
-
+    
     const csvContent = `${headers}\n${rows}`;
-
+    
     // CSV dosyasını indir
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -229,23 +229,23 @@ function ScanResultsTable() {
     link.click();
     document.body.removeChild(link);
   };
-
+  
   // Port durumuna göre hücre renklendirme
   const getStatusStyle = (status) => {
     if (!status) return {};
-
-    switch (status.toLowerCase()) {
+    
+    switch(status.toLowerCase()) {
       case 'open':
-        return {
-          backgroundColor: 'rgba(76, 175, 80, 0.1)',
-          fontWeight: 'bold'
+        return { 
+          backgroundColor:  'rgba(76, 175, 80, 0.1)', 
+          fontWeight: 'bold' 
         };
       case 'closed':
-        return {
+        return { 
           backgroundColor: 'rgba(244, 67, 54, 0.1)'
         };
       case 'filtered':
-        return {
+        return { 
           backgroundColor: 'rgba(255, 152, 0, 0.1)'
         };
       default:
@@ -255,7 +255,7 @@ function ScanResultsTable() {
 
   // Risk seviyesine göre renk döndürür
   const getRiskColor = (risk) => {
-    switch (risk) {
+    switch(risk) {
       case 'Kritik': return { bg: '#d32f2f', text: 'white' };
       case 'Yüksek': return { bg: '#f57c00', text: 'black' };
       case 'Orta': return { bg: '#fbc02d', text: 'black' };
@@ -263,29 +263,29 @@ function ScanResultsTable() {
       default: return { bg: '#9e9e9e', text: 'white' };
     }
   };
-
+  
   return (
     <div>
-      <Appbar />
+      <Appbar/>
       <div style={{ backgroundColor: colors.bodyLightColor, minHeight: '100vh' }}>
         <Box sx={{ p: 3 }}>
-          <Paper
-            elevation={3}
-            sx={{
-              p: 2,
-              mb: 3,
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              p: 2, 
+              mb: 3, 
               backgroundColor: colors.scanLightColor,
-              color: colors.lightText
+              color: colors.lightText 
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
               <Typography variant="h5" component="h1" sx={{ mb: { xs: 2, md: 0 } }}>
                 Tarama Sonuçları: {id}
               </Typography>
-
+              
               {/* Tab Bar */}
-              <Tabs
-                value={activeTab}
+              <Tabs 
+                value={activeTab} 
                 onChange={(e, newValue) => setActiveTab(newValue)}
                 aria-label="scan detail tabs"
               >
@@ -293,7 +293,7 @@ function ScanResultsTable() {
                 <Tab label="Zafiyetler" value="vulnerabilities" icon={<BugReportIcon />} />
               </Tabs>
             </Box>
-
+            
             {/* Sonuçlar sekmesi */}
             {activeTab === 'results' && (
               <>
@@ -301,39 +301,39 @@ function ScanResultsTable() {
                   <Box>
                     {!loading && filteredData.length > 0 && stats.totalRows > 0 && (
                       <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                        <Chip
-                          label={`Toplam Satır: ${stats.totalRows}`}
+                        <Chip 
+                          label={`Toplam Satır: ${stats.totalRows}`} 
                           size="small"
-                          sx={{
+                          sx={{ 
                             backgroundColor: theme ? 'rgba(74, 71, 71, 0.73)' : 'rgba(0,0,0,0.1)',
                             color: theme ? colors.darkText : colors.lightText
                           }}
                         />
                         {stats.openPorts > 0 && (
-                          <Chip
-                            label={`Açık Port: ${stats.openPorts}`}
+                          <Chip 
+                            label={`Açık Port: ${stats.openPorts}`} 
                             size="small"
-                            sx={{
+                            sx={{ 
                               backgroundColor: theme ? 'rgba(46, 125, 50, 0.6)' : 'rgba(76, 175, 80, 0.2)',
                               color: theme ? colors.darkText : colors.lightText
                             }}
                           />
                         )}
                         {stats.uniqueServices > 0 && (
-                          <Chip
-                            label={`Farklı Servis: ${stats.uniqueServices}`}
+                          <Chip 
+                            label={`Farklı Servis: ${stats.uniqueServices}`} 
                             size="small"
-                            sx={{
+                            sx={{ 
                               backgroundColor: theme ? 'rgba(2, 136, 209, 0.6)' : 'rgba(255, 118, 20, 0.2)',
                               color: theme ? colors.darkText : colors.lightText
                             }}
                           />
                         )}
                         {stats.ipAddresses > 0 && (
-                          <Chip
-                            label={`IP Sayısı: ${stats.ipAddresses}`}
+                          <Chip 
+                            label={`IP Sayısı: ${stats.ipAddresses}`} 
                             size="small"
-                            sx={{
+                            sx={{ 
                               backgroundColor: theme ? 'rgba(217, 0, 255, 0.96)' : 'rgba(186, 104, 200, 0.2)',
                               color: theme ? colors.darkText : colors.lightText
                             }}
@@ -342,20 +342,20 @@ function ScanResultsTable() {
                       </Box>
                     )}
                   </Box>
-
+                  
                   <Box>
-                    <IconButton
+                    <IconButton 
                       sx={{ color: theme ? colors.darkText : colors.lightText }}
                       onClick={() => setShowFilters(!showFilters)}
                       title="Filtreleri göster/gizle"
                     >
                       <FilterListIcon />
                     </IconButton>
-
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<CloudDownloadIcon />}
+                    
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      startIcon={<CloudDownloadIcon />} 
                       disabled={!filteredData.length}
                       onClick={exportAsCSV}
                       size="small"
@@ -365,20 +365,20 @@ function ScanResultsTable() {
                     </Button>
                   </Box>
                 </Box>
-
+                
                 {/* Filtreleme bölümü */}
                 {showFilters && (
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      mb: 2,
-                      p: 2,
+                  <Paper 
+                    elevation={2} 
+                    sx={{ 
+                      mb: 2, 
+                      p: 2, 
                       backgroundColor: theme ? colors.cardDarkColor : '#f5f5f5',
-                      color: theme ? colors.darkText : colors.lightText
+                      color: theme ? colors.darkText : colors.lightText  
                     }}
                   >
                     <Typography variant="subtitle1" gutterBottom>Filtreleme Seçenekleri</Typography>
-
+                    
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
                       <FormGroup>
                         <FormControlLabel
@@ -392,7 +392,7 @@ function ScanResultsTable() {
                           label="Sadece açık portları göster"
                         />
                       </FormGroup>
-
+                      
                       <TextField
                         label="Arama"
                         variant="outlined"
@@ -403,7 +403,7 @@ function ScanResultsTable() {
                         InputProps={{
                           startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                         }}
-                        sx={{
+                        sx={{ 
                           minWidth: 220,
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': {
@@ -424,7 +424,7 @@ function ScanResultsTable() {
                     </Box>
                   </Paper>
                 )}
-
+                
                 {/* Yükleniyor ve hata durumları */}
                 {loading ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center', my: 5 }}>
@@ -438,10 +438,10 @@ function ScanResultsTable() {
                   </Alert>
                 ) : (
                   // Tablo
-                  <Paper
-                    elevation={3}
-                    sx={{
-                      mb: 3,
+                  <Paper 
+                    elevation={3} 
+                    sx={{ 
+                      mb: 3, 
                       backgroundColor: theme ? colors.cardDarkColor : colors.cardLightColor,
                       color: theme ? colors.darkText : colors.lightText
                     }}
@@ -451,11 +451,11 @@ function ScanResultsTable() {
                         <TableHead>
                           <TableRow sx={{ backgroundColor: theme ? 'rgba(234, 1, 1, 0.05)' : 'rgba(255, 0, 0, 0.03)' }}>
                             {tableData.columns.map((column, index) => (
-                              <TableCell
-                                key={index}
-                                sx={{
-                                  color: theme ? colors.darkText : colors.lightText,
-                                  fontWeight: 'bold'
+                              <TableCell 
+                                key={index} 
+                                sx={{ 
+                                  color: theme ? colors.darkText : colors.lightText, 
+                                  fontWeight: 'bold' 
                                 }}
                               >
                                 {column}
@@ -466,19 +466,19 @@ function ScanResultsTable() {
                         <TableBody>
                           {filteredData.map((row, rowIndex) => {
                             // "state" sütunu varsa, renklendirme kullan
-                            const stateIndex = tableData.columns.findIndex(col =>
+                            const stateIndex = tableData.columns.findIndex(col => 
                               col.toLowerCase() === 'state' || col.toLowerCase() === 'durum'
                             );
-
+                            
                             return (
-                              <TableRow
+                              <TableRow 
                                 key={rowIndex}
-                                sx={{
-                                  '&:nth-of-type(odd)': {
-                                    backgroundColor: theme ? 'rgba(105, 104, 104, 0.91)' : 'rgba(190, 213, 234, 0.97)'
+                                sx={{ 
+                                  '&:nth-of-type(odd)': { 
+                                    backgroundColor: theme ? 'rgba(105, 104, 104, 0.91)' : 'rgba(190, 213, 234, 0.97)' 
                                   },
-                                  '&:hover': {
-                                    backgroundColor: theme ? 'rgba(57, 108, 65, 0.94)' : 'rgb(195, 189, 159)'
+                                  '&:hover': { 
+                                    backgroundColor: theme ? 'rgba(57, 108, 65, 0.94)' : 'rgb(195, 189, 159)' 
                                   }
                                 }}
                               >
@@ -486,7 +486,7 @@ function ScanResultsTable() {
                                   // "state" sütunu için özel stil
                                   if (cellIndex === stateIndex) {
                                     let statusColor = { bg: '#9e9e9e', text: 'white' };
-
+                                    
                                     if (cell === 'open') {
                                       statusColor = { bg: '#4caf50', text: 'white' };
                                     } else if (cell === 'closed') {
@@ -494,13 +494,13 @@ function ScanResultsTable() {
                                     } else if (cell === 'filtered') {
                                       statusColor = { bg: '#ff9800', text: 'black' };
                                     }
-
+                                    
                                     return (
                                       <TableCell key={cellIndex}>
-                                        <Chip
-                                          label={cell || 'unknown'}
+                                        <Chip 
+                                          label={cell || 'unknown'} 
                                           size="small"
-                                          sx={{
+                                          sx={{ 
                                             backgroundColor: statusColor.bg,
                                             color: statusColor.text,
                                             fontSize: '0.7rem',
@@ -510,10 +510,10 @@ function ScanResultsTable() {
                                       </TableCell>
                                     );
                                   }
-
+                                  
                                   // Normal hücreler
                                   return (
-                                    <TableCell
+                                    <TableCell 
                                       key={cellIndex}
                                       sx={{ color: theme ? colors.darkText : colors.lightText }}
                                     >
@@ -531,7 +531,7 @@ function ScanResultsTable() {
                 )}
               </>
             )}
-
+            
             {/* Zafiyetler sekmesi */}
             {activeTab === 'vulnerabilities' && (
               <>
@@ -559,19 +559,19 @@ function ScanResultsTable() {
                 ) : (
                   <Box>
                     {vulnerabilityData.services.map((service, serviceIndex) => (
-                      <Paper
+                      <Paper 
                         key={serviceIndex}
-                        elevation={3}
-                        sx={{
-                          mb: 3,
+                        elevation={3} 
+                        sx={{ 
+                          mb: 3, 
                           backgroundColor: theme ? colors.cardDarkColor : colors.cardLightColor,
                           color: theme ? colors.darkText : colors.lightText,
                           overflow: 'hidden'
                         }}
                       >
-                        <Box sx={{
-                          p: 2,
-                          bgcolor: theme ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 0, 0, 0.05)',
+                        <Box sx={{ 
+                          p: 2, 
+                          bgcolor: theme ? 'rgba(255, 0, 0, 0.1)' : 'rgba(255, 0, 0, 0.05)', 
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center'
@@ -584,13 +584,13 @@ function ScanResultsTable() {
                               {service.ip}:{service.port} ({service.protocol})
                             </Typography>
                           </Box>
-                          <Chip
+                          <Chip 
                             label={`${service.vulnerabilities.length} Zafiyet`}
                             color="error"
                             variant="outlined"
                           />
                         </Box>
-
+                        
                         <TableContainer>
                           <Table size="small">
                             <TableHead>
@@ -624,10 +624,10 @@ function ScanResultsTable() {
                                       {vuln.title}
                                     </TableCell>
                                     <TableCell>
-                                      <Chip
+                                      <Chip 
                                         label={vuln.risk}
                                         size="small"
-                                        sx={{
+                                        sx={{ 
                                           backgroundColor: riskColor.bg,
                                           color: riskColor.text,
                                           fontWeight: 'bold',
@@ -640,10 +640,10 @@ function ScanResultsTable() {
                                     </TableCell>
                                     <TableCell>
                                       {vuln.reference ? (
-                                        <Button
-                                          href={vuln.reference}
-                                          target="_blank"
-                                          size="small"
+                                        <Button 
+                                          href={vuln.reference} 
+                                          target="_blank" 
+                                          size="small" 
                                           variant="outlined"
                                         >
                                           Detaylar
